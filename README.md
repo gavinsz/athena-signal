@@ -1,5 +1,7 @@
 # Athena-signal processing open source library
 
+## input 16k 16bit pcm, output 16k 16bit pcm
+
 ## What is Athena-signal?
 
 Athena-signal is an open-source implementation of speech signal processing algorithms. 

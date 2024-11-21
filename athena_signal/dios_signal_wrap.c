@@ -2994,6 +2994,66 @@ SWIG_AsVal_size_t (PyObject * obj, size_t *val)
 }
 
 
+/* Getting isfinite working pre C99 across multiple platforms is non-trivial. Users can provide SWIG_isfinite on older platforms. */
+#ifndef SWIG_isfinite
+/* isfinite() is a macro for C99 */
+# if defined(isfinite)
+#  define SWIG_isfinite(X) (isfinite(X))
+# elif defined(__cplusplus) && __cplusplus >= 201103L
+/* Use a template so that this works whether isfinite() is std::isfinite() or
+ * in the global namespace.  The reality seems to vary between compiler
+ * versions.
+ *
+ * Make sure namespace std exists to avoid compiler warnings.
+ *
+ * extern "C++" is required as this fragment can end up inside an extern "C" { } block
+ */
+namespace std { }
+extern "C++" template<typename T>
+inline int SWIG_isfinite_func(T x) {
+  using namespace std;
+  return isfinite(x);
+}
+#  define SWIG_isfinite(X) (SWIG_isfinite_func(X))
+# elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+#  define SWIG_isfinite(X) (__builtin_isfinite(X))
+# elif defined(__clang__) && defined(__has_builtin)
+#  if __has_builtin(__builtin_isfinite)
+#   define SWIG_isfinite(X) (__builtin_isfinite(X))
+#  endif
+# elif defined(_MSC_VER)
+#  define SWIG_isfinite(X) (_finite(X))
+# elif defined(__sun) && defined(__SVR4)
+#  include <ieeefp.h>
+#  define SWIG_isfinite(X) (finite(X))
+# endif
+#endif
+
+
+/* Accept infinite as a valid float value unless we are unable to check if a value is finite */
+#ifdef SWIG_isfinite
+# define SWIG_Float_Overflow_Check(X) ((X < -FLT_MAX || X > FLT_MAX) && SWIG_isfinite(X))
+#else
+# define SWIG_Float_Overflow_Check(X) ((X < -FLT_MAX || X > FLT_MAX))
+#endif
+
+
+SWIGINTERN int
+SWIG_AsVal_float (PyObject * obj, float *val)
+{
+  double v;
+  int res = SWIG_AsVal_double (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if (SWIG_Float_Overflow_Check(v)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = (float)(v);
+    }
+  }  
+  return res;
+}
+
+
 SWIGINTERNINLINE PyObject*
   SWIG_From_int  (int value)
 {
@@ -3013,7 +3073,7 @@ SWIGINTERN PyObject *_wrap_dios_ssp_v1(PyObject *SWIGUNUSEDPARM(self), PyObject 
   size_t arg6 ;
   int arg7 ;
   int arg8 ;
-  float arg9;
+  float arg9 ;
   PyObject *swig_obj[6] ;
   int result;
   
@@ -3060,9 +3120,11 @@ SWIGINTERN PyObject *_wrap_dios_ssp_v1(PyObject *SWIGUNUSEDPARM(self), PyObject 
   
   
   arg7 = PyInt_AsLong(swig_obj[3]);
-
+  
+  
   arg8 = PyInt_AsLong(swig_obj[4]);
-
+  
+  
   arg9 = PyFloat_AsDouble(swig_obj[5]);
   
   result = (int)dios_ssp_v1(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9);

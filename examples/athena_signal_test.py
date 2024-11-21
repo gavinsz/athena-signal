@@ -20,6 +20,17 @@ from athena_signal.dios_ssp_api import athena_signal_process
 
 if __name__ == "__main__":
 
+    input_file = ["examples/BDG4453_2_20241112160559_16777216_16k.pcm"]
+    out_file = ["examples/BDG4453_2_20241112160559_16777216_16k-denoise.pcm"]
+    config = {'add_AEC': 0, 'add_BF': 0, 'add_NS':1, 'add_AGC':0, 'mic_num': 1}
+    athena_signal_process(input_file, out_file, config=config)
+
+
+    input_file = ["examples/BDG4453_2_20241112160559_16777216_16k-denoise.pcm"]
+    out_file = ["examples/BDG4453_2_20241112160559_16777216_16k-denoise-1.pcm"]
+    config = {'add_AGC': 1, 'add_BF': 0, 'add_NS':1, 'add_AGC':0, 'mic_num': 1}
+    athena_signal_process(input_file, out_file, config=config)
+
     # Test AEC
     input_file = ["examples/0841-0875_env7_sit1_male_in.pcm"]
     ref_file = ["examples/0841-0875_env7_sit1_male_ref.pcm"]
